@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Erro {{ code }} — Artifex{% endblock %}
+{% block content %}
+<div class="empty">
+  {{ icon('alert') }}
+  <h1>{{ code }}</h1>
+  <p>{{ message }}</p>
+  <a class="btn btn-gold" href="{{ url_for('market.home') }}">Voltar ao início</a>
+</div>
+{% endblock %}

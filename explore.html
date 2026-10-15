@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "partials/cards.html" import grid, pager with context %}
+{% block title %}{% if q %}Resultados para “{{ q }}”{% else %}Explorar{% endif %} — Artifex{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{% if q %}Resultados para “{{ q }}”{% else %}Explorar{% endif %}</h1>
+    <p class="muted mb0">{{ pg.total }} recurso{{ '' if pg.total == 1 else 's' }}</p>
+  </div>
+</div>
+
+<form class="filters" method="get" action="{{ url_for('market.explore') }}">
+  {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+  <select name="category" aria-label="Categoria" data-autosubmit>
+    <option value="">Todas as categorias</option>
+    {% for c in categories %}<option value="{{ c['slug'] }}" {% if filters.category == c['slug'] %}selected{% endif %}>{{ c['name'] }}</option>{% endfor %}
+  </select>
+  <select name="format" aria-label="Formato">
+    <option value="">Todos os formatos</option>
+    {% for f in formats %}<option value="{{ f }}" {% if filters.format == f %}selected{% endif %}>{{ f }}</option>{% endfor %}
+  </select>
+  <select name="engine" aria-label="Engine">
+    <option value="">Qualquer engine</option>
+    {% for e in engines %}<option value="{{ e }}" {% if filters.engine == e %}selected{% endif %}>{{ e }}</option>{% endfor %}
+  </select>
+  <select name="price" aria-label="Preço">
+    <option value="">Qualquer preço</option>
+    <option value="free" {% if filters.price == 'free' %}selected{% endif %}>Gratuitos</option>
+    <option value="paid" {% if filters.price == 'paid' %}selected{% endif %}>Pagos</option>
+  </select>
+  <select name="sort" aria-label="Ordenar por">
+    {% for k, label in sorts %}<option value="{{ k }}" {% if sort == k %}selected{% endif %}>Ordenar: {{ label }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-gold btn-sm" type="submit">Aplicar</button>
+  {% if active or q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('market.explore') }}">Limpar tudo</a>{% endif %}
+</form>
+
+{% if rows %}
+  {{ grid(rows) }}
+  {{ pager(pg, 'market.explore', base_args) }}
+{% else %}
+  <div class="empty">
+    {{ icon('search') }}
+    <h2>Nenhum recurso encontrado</h2>
+    <p>{% if q or active %}Tente outros termos ou remova alguns filtros.{% else %}Ainda não há recursos publicados no catálogo.{% endif %}</p>
+    {% if q or active %}<a class="btn btn-gold" href="{{ url_for('market.explore') }}">Limpar busca e filtros</a>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}

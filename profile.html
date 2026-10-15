@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "partials/cards.html" import grid with context %}
+{% block title %}{{ u['display_name'] }} — Artifex{% endblock %}
+{% block content %}
+<div class="profile-head">
+  {{ avatar(u['display_name'], u['avatar_path'], 'lg') }}
+  <div>
+    <h1 class="mb0">{{ u['display_name'] }}</h1>
+    <p class="muted">@{{ u['handle'] }}{% if u['role'] == 'admin' %} · <span class="chip chip-gold">Equipe Artifex</span>{% endif %}</p>
+    {% if u['bio'] %}<p>{{ u['bio'] }}</p>{% endif %}
+    {% if current_user and current_user['id'] == u['id'] %}<a class="btn btn-sm" href="{{ url_for('account.settings') }}">Editar perfil</a>{% endif %}
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><b>{{ stats['n'] }}</b><span>Recursos publicados</span></div>
+  <div class="stat"><b>{{ stats['d'] }}</b><span>Downloads</span></div>
+</div>
+<div class="section-head"><h2>Recursos publicados</h2></div>
+{% if rows %}{{ grid(rows) }}{% else %}
+<div class="empty">{{ icon('box') }}<h2>Nenhum recurso publicado</h2><p>Quando {{ u['display_name'] }} publicar algo aprovado pela equipe, aparece aqui.</p></div>
+{% endif %}
+{% endblock %}

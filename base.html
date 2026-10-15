@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0c">
+  <meta name="csrf" content="{{ csrf_token() }}">
+  <title>{% block title %}Artifex — recursos para jogos{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn menu-toggle" type="button" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false" data-menu-toggle>{{ icon('menu') }}</button>
+  <a class="logo" href="{{ url_for('market.home') }}" aria-label="Artifex — início"><span class="logo-mark">A</span><span class="logo-text">ARTIFEX</span></a>
+  <form class="search" action="{{ url_for('market.explore') }}" method="get" role="search" data-search autocomplete="off">
+    {{ icon('search') }}
+    <input type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Buscar por assets, artistas, etc..." aria-label="Buscar" maxlength="100">
+    <div class="suggest" data-suggest hidden></div>
+  </form>
+  <div class="top-actions">
+    {% if current_user %}
+      <a class="icon-btn bell" href="{{ url_for('account.notifications') }}" aria-label="Notificações{% if unread_count %} ({{ unread_count }} não lidas){% endif %}">
+        {{ icon('bell') }}{% if unread_count %}<span class="badge">{{ unread_count if unread_count < 100 else '99+' }}</span>{% endif %}
+      </a>
+      <details class="menu">
+        <summary aria-label="Menu da conta">{{ avatar(current_user['display_name'], current_user['avatar_path']) }}</summary>
+        <div class="menu-panel">
+          <div class="menu-head"><strong>{{ current_user['display_name'] }}</strong><span class="muted">@{{ current_user['handle'] }}</span></div>
+          <a href="{{ url_for('account.profile', handle=current_user['handle']) }}">{{ icon('user') }} Meu perfil</a>
+          <a href="{{ url_for('account.library') }}">{{ icon('library') }} Biblioteca</a>
+          <a href="{{ url_for('account.creator') }}">{{ icon('box') }} Painel de criador</a>
+          <a href="{{ url_for('account.notifications') }}">{{ icon('bell') }} Notificações</a>
+          <a href="{{ url_for('account.settings') }}">{{ icon('settings') }} Configurações</a>
+          {% if current_user['role'] == 'admin' %}<a href="{{ url_for('admin.dashboard') }}">{{ icon('shield') }} Administração</a>{% endif %}
+          <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">{{ icon('log-out') }} Sair</button></form>
+        </div>
+      </details>
+    {% else %}
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.login') }}">Entrar</a>
+      <a class="btn btn-gold btn-sm hide-sm" href="{{ url_for('auth.register') }}">Criar conta</a>
+    {% endif %}
+  </div>
+</header>
+
+<div class="shell">
+  <div class="scrim" data-menu-close hidden></div>
+  <nav class="sidebar" id="sidebar" aria-label="Navegação principal">
+    {% set ep = request.endpoint or '' %}
+    <ul>
+      <li><a href="{{ url_for('market.home') }}" {% if ep == 'market.home' %}class="on" aria-current="page"{% endif %}>{{ icon('home') }} Início</a></li>
+      <li><a href="{{ url_for('market.explore') }}" {% if ep == 'market.explore' %}class="on" aria-current="page"{% endif %}>{{ icon('compass') }} Explorar</a></li>
+      <li><a href="{{ url_for('market.categories') }}" {% if ep == 'market.categories' %}class="on" aria-current="page"{% endif %}>{{ icon('grid') }} Categorias</a></li>
+      <li><a href="{{ url_for('account.library') }}" {% if ep == 'account.library' %}class="on" aria-current="page"{% endif %}>{{ icon('library') }} Biblioteca</a></li>
+      <li><a href="{{ url_for('account.favorites') }}" {% if ep == 'account.favorites' %}class="on" aria-current="page"{% endif %}>{{ icon('heart') }} Favoritos</a></li>
+      <li><a href="{{ url_for('publish.index') }}" {% if ep.startswith('publish.') %}class="on" aria-current="page"{% endif %}>{{ icon('upload') }} Publicar</a></li>
+      {% if current_user %}<li><a href="{{ url_for('account.creator') }}" {% if ep == 'account.creator' %}class="on" aria-current="page"{% endif %}>{{ icon('box') }} Meus recursos</a></li>{% endif %}
+    </ul>
+    {% if current_user and current_user['role'] == 'admin' %}
+    <p class="side-title">Administração</p>
+    <ul>
+      <li><a href="{{ url_for('admin.dashboard') }}" {% if ep.startswith('admin.') %}class="on"{% endif %}>{{ icon('shield') }} Painel admin</a></li>
+    </ul>
+    {% endif %}
+    <ul class="side-bottom">
+      <li><a href="{{ url_for('account.notifications') }}" {% if ep == 'account.notifications' %}class="on" aria-current="page"{% endif %}>{{ icon('bell') }} Notificações{% if unread_count %} <span class="badge inline">{{ unread_count }}</span>{% endif %}</a></li>
+      <li><a href="{{ url_for('account.settings') }}" {% if ep == 'account.settings' %}class="on" aria-current="page"{% endif %}>{{ icon('settings') }} Configurações</a></li>
+    </ul>
+    <p class="side-foot"><a href="{{ url_for('market.policy', slug='termos') }}">Termos</a> · <a href="{{ url_for('market.policy', slug='privacidade') }}">Privacidade</a> · <a href="{{ url_for('market.policy', slug='licencas') }}">Licenças</a></p>
+  </nav>
+
+  <main class="content" id="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}<div class="flashes" role="status">
+        {% for cat, msg in messages %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}
+      </div>{% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

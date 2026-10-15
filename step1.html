@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Publicar · Apresentação — Artifex{% endblock %}
+{% block content %}
+{% include "publish/_steps.html" %}
+<form class="panel" method="post" enctype="multipart/form-data" data-upload>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Informações básicas</h2>
+  <label class="field"><span>Nome do recurso</span><input type="text" name="title" value="{{ a['title'] }}" maxlength="120" placeholder="Ex.: Fantasy Village" required></label>
+  <label class="field"><span>Descrição</span><textarea name="description" maxlength="5000" data-count="#desc-count" placeholder="Descreva seu recurso em detalhes (mínimo 30 caracteres)">{{ a['description'] }}</textarea><span class="hint"><span id="desc-count">0/5000</span></span></label>
+  <div class="spec-grid">
+    <label class="field"><span>Categoria</span><select name="category_id" required><option value="">Selecione uma categoria</option>
+      {% for c in categories %}<option value="{{ c['id'] }}" {% if a['category_id'] == c['id'] %}selected{% endif %}>{{ c['name'] }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Subcategoria (opcional)</span><input type="text" name="subcategory" value="{{ a['subcategory'] }}" maxlength="60" placeholder="Ex.: Medieval"></label>
+  </div>
+  <label class="field"><span>Tags</span><input type="text" name="tags" value="{{ tags }}" placeholder="medieval, low poly, vila"><span class="hint">Separe com vírgulas. Até 10 tags.</span></label>
+
+  <h2 id="midias" class="mt">Mídias</h2>
+  <p class="muted small">Imagens: PNG, JPG, WEBP ou GIF (mínimo 300 px, até {{ limits['MAX_IMAGE_MB'] }} MB). Vídeos: MP4 ou WEBM (até {{ limits['MAX_VIDEO_MB'] }} MB). As imagens são reprocessadas e os metadados removidos.</p>
+
+  <div class="field"><span class="lbl">Imagem de capa (obrigatória)</span>
+    {% if media.cover %}<div class="media-grid"><div class="media-item"><img src="{{ media_url('asset', media.cover['thumb_name']) }}" alt="Capa atual">
+      <div class="acts"><span class="small muted">Capa</span><button class="btn btn-danger btn-sm" type="submit" formaction="{{ url_for('publish.media_delete', asset_id=a['id'], media_id=media.cover['id']) }}" formnovalidate formmethod="post" data-noupload>Remover</button></div></div></div>{% endif %}
+    <input type="file" name="cover" accept="image/png,image/jpeg,image/webp,image/gif"></div>
+
+  <div class="field"><span class="lbl">Imagens adicionais (mínimo 2, até {{ max_images }})</span>
+    {% if media.images %}<div class="media-grid">{% for m in media.images %}
+      <div class="media-item"><img src="{{ media_url('asset', m['thumb_name']) }}" alt="Imagem {{ loop.index }}">
+        <div class="acts"><span class="small muted">{{ loop.index }}</span>
+          <span>
+            <button class="btn btn-ghost btn-sm" type="submit" formaction="{{ url_for('publish.media_move', asset_id=a['id'], media_id=m['id']) }}" name="dir" value="up" aria-label="Mover para antes" {% if loop.first %}disabled{% endif %}>←</button>
+            <button class="btn btn-ghost btn-sm" type="submit" formaction="{{ url_for('publish.media_move', asset_id=a['id'], media_id=m['id']) }}" name="dir" value="down" aria-label="Mover para depois" {% if loop.last %}disabled{% endif %}>→</button>
+            <button class="btn btn-danger btn-sm" type="submit" formaction="{{ url_for('publish.media_delete', asset_id=a['id'], media_id=m['id']) }}" aria-label="Remover imagem {{ loop.index }}">✕</button>
+          </span></div></div>{% endfor %}</div>{% endif %}
+    <input type="file" name="images" accept="image/png,image/jpeg,image/webp,image/gif" multiple></div>
+
+  <div class="field"><span class="lbl">Vídeo de demonstração (mínimo 1, até {{ max_videos }})</span>
+    {% if media.videos %}<div class="media-grid">{% for m in media.videos %}
+      <div class="media-item"><video src="{{ media_url('asset', m['stored_name']) }}" controls preload="metadata"></video>
+        <div class="acts"><span class="small muted">Vídeo {{ loop.index }}</span>
+          <button class="btn btn-danger btn-sm" type="submit" formaction="{{ url_for('publish.media_delete', asset_id=a['id'], media_id=m['id']) }}">✕</button></div></div>{% endfor %}</div>{% endif %}
+    <input type="file" name="videos" accept="video/mp4,video/webm" multiple></div>
+
+  <progress hidden max="100" value="0"></progress><p class="muted small" data-progress-label></p>
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="{{ url_for('account.creator') }}">Cancelar</a>
+    <span class="row">
+      <button class="btn" type="submit" name="action" value="save">Salvar rascunho</button>
+      <button class="btn btn-gold" type="submit" name="action" value="next">Próximo →</button>
+    </span>
+  </div>
+</form>
+{% endblock %}

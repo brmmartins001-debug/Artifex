@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ p['title'] }} — Artifex{% endblock %}
+{% block content %}
+<article class="prose">
+  <h1>{{ p['title'] }}</h1>
+  <p class="muted small">Atualizado em {{ p['updated_at']|datebr }}</p>
+  {% for para in p['body']|paragraphs %}<p>{{ para }}</p>{% endfor %}
+</article>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Minha biblioteca — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Minha biblioteca</h1></div>
+{% if items %}
+  {% for it in items %}
+  <article class="lib-item">
+    {% if it['cover'] %}<img src="{{ media_url('asset', it['cover']) }}" alt="">{% else %}<span class="noimg">Sem imagem</span>{% endif %}
+    <div>
+      <h3 class="mb0"><a href="{{ url_for('market.asset', asset_id=it['id']) }}">{{ it['title'] }}</a></h3>
+      <p class="muted small mb0">{{ it['creator_name'] }} · obtido em {{ it['acquired_at']|datebr }} · {{ 'Gratuito' if it['source'] == 'free' else 'Compra' }}</p>
+      <p class="muted small mb0">Licença: {{ LICENSE_LABELS.get(it['item_license'], 'Não informada') }} · versão {{ it['item_version'] }}</p>
+      {% if it['asset_status'] != 'published' %}<p class="small"><span class="status status-{{ it['asset_status'] }}">{{ STATUS_LABELS[it['asset_status']] }}</span> <span class="muted">Este recurso não está mais disponível para novos downloads.</span></p>{% endif %}
+      {% set vs = versions.get(it['id'], []) %}
+      {% if vs %}<details class="small"><summary class="muted">Versões ({{ vs|length }})</summary><ul class="version-list">{% for v in vs %}<li>v{{ v['version'] }} — {{ v['changelog'] }}</li>{% endfor %}</ul></details>{% endif %}
+    </div>
+    <div class="acts">
+      {% if it['asset_status'] == 'published' %}
+        {% for f in files.get(it['id'], []) %}<a class="btn btn-gold btn-sm" href="{{ url_for('market.download', file_id=f['id']) }}">{{ icon('download') }} Baixar {{ f['original_name'] }}</a><br>{% endfor %}
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+{% else %}
+  <div class="empty">{{ icon('library') }}<h2>Sua biblioteca está vazia</h2><p>Os recursos que você obtiver — gratuitos ou comprados — ficam aqui, com licença e downloads.</p>
+    <a class="btn btn-gold" href="{{ url_for('market.explore', price='free') }}">Ver recursos gratuitos</a></div>
+{% endif %}
+{% endblock %}

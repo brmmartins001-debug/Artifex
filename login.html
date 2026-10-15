@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Entrar — Artifex{% endblock %}
+{% block content %}
+<div class="auth-box panel">
+  <h1>Entrar</h1>
+  <p class="muted">Acesse sua conta para baixar, favoritar e publicar recursos.</p>
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>E-mail</span><input type="email" name="email" value="{{ form.get('email', '') }}" autocomplete="email" required autofocus></label>
+    <label class="field"><span>Senha</span><input type="password" name="password" autocomplete="current-password" required></label>
+    <button class="btn btn-gold btn-block" type="submit">Entrar</button>
+  </form>
+  <p class="small mt"><a class="link-gold" href="{{ url_for('auth.forgot') }}">Esqueci minha senha</a></p>
+  <hr>
+  <p class="small muted">Ainda não tem conta? <a class="link-gold" href="{{ url_for('auth.register', next=request.args.get('next')) }}">Criar conta</a></p>
+</div>
+{% endblock %}

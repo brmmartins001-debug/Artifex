@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Publicar · Arquivos e envio — Artifex{% endblock %}
+{% block content %}
+{% include "publish/_steps.html" %}
+<form class="panel" method="post" enctype="multipart/form-data" data-upload>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Arquivos do recurso</h2>
+  <p class="muted small">Envie os arquivos diretamente (links externos não substituem a entrega). Para vários arquivos use um <b>.zip</b>. Limite: {{ limits['MAX_FILE_MB'] }} MB por arquivo, até {{ max_files }} arquivos. Executáveis e instaladores (.exe, .apk, .sh, .dll…) são bloqueados, inclusive dentro de .zip.</p>
+
+  {% if files %}<div>{% for f in files %}
+    <div class="file-row"><span>{{ icon('file') }} {{ f['original_name'] }} <span class="muted small">({{ f['size_bytes']|filesize }} · sha256 {{ f['sha256'][:10] }}…)</span></span>
+      <button class="btn btn-danger btn-sm" type="submit" formaction="{{ url_for('publish.file_delete', asset_id=a['id'], file_id=f['id']) }}" formnovalidate data-confirm="Remover este arquivo?">Remover</button></div>{% endfor %}</div>
+  {% else %}<p class="notice warn">Nenhum arquivo enviado ainda.</p>{% endif %}
+
+  <label class="field"><span>Adicionar arquivos</span><input type="file" name="files" multiple></label>
+  <details class="small muted"><summary>Tipos de arquivo aceitos</summary><p>{{ allowed_exts|join(', ') }}</p></details>
+
+  <h2 class="mt">Preço</h2>
+  <div class="field" data-price-mode>
+    <label class="check"><input type="radio" name="price_mode" value="free" {% if a['price_cents'] == 0 %}checked{% endif %}> Gratuito</label>
+    <label class="check"><input type="radio" name="price_mode" value="paid" {% if a['price_cents'] > 0 %}checked{% endif %}> Pago</label>
+    <div data-price-box hidden>
+      <label class="field"><span>Preço em reais (mínimo R$ 1,00)</span><input type="text" name="price" value="{{ price_value }}" inputmode="decimal" placeholder="49,90"></label>
+      <p class="notice warn">As compras ainda não estão habilitadas (o pagamento não está configurado). O recurso pago poderá ser publicado, mas só poderá ser comprado depois que o pagamento for ativado.</p>
+    </div>
+  </div>
+
+  <h2 class="mt">Revisão final</h2>
+  <ul class="small">
+    <li><b>Nome:</b> {{ a['title'] }}</li>
+    <li><b>Licença:</b> {{ LICENSE_LABELS.get(a['license'], '—') }}</li>
+    <li><b>Versão:</b> {{ a['current_version'] }}</li>
+  </ul>
+  <p><button class="btn btn-ghost btn-sm" type="submit" name="action" value="preview">Ver prévia da página</button></p>
+
+  <label class="check"><input type="checkbox" name="rights" value="1" {% if a['rights_confirmed'] %}checked{% endif %}>
+    Confirmo que possuo os direitos necessários para distribuir este recurso e que a licença informada está correta.</label>
+  <p class="muted small">Ao enviar, o recurso entra na fila de moderação e <b>não fica público</b> até ser aprovado.</p>
+
+  <progress hidden max="100" value="0"></progress><p class="muted small" data-progress-label></p>
+  <div class="form-actions">
+    <button class="btn btn-ghost" type="submit" name="action" value="back">← Voltar</button>
+    <span class="row">
+      <button class="btn" type="submit" name="action" value="save">Salvar rascunho</button>
+      <button class="btn btn-gold" type="submit" name="action" value="submit" data-confirm="Enviar este recurso para análise?">Enviar para análise</button>
+    </span>
+  </div>
+</form>
+{% endblock %}

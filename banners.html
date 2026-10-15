@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Banners — Administração{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Banners da página inicial</h1></div>
+{% include "admin/_nav.html" %}
+<form class="panel" method="post" enctype="multipart/form-data">{% include "admin/_csrf.html" %}<input type="hidden" name="action" value="create">
+  <h2>Novo banner</h2>
+  <div class="spec-grid">
+    <label class="field"><span>Título</span><input type="text" name="title" maxlength="80" required></label>
+    <label class="field"><span>Destino (ex.: /explore?category=audio ou https://…)</span><input type="text" name="destination" value="/explore" required></label>
+    <label class="field"><span>Ordem de exibição</span><input type="number" name="position" value="0" min="0" max="999"></label>
+    <label class="field"><span>Início (opcional)</span><input type="date" name="starts_at"></label>
+    <label class="field"><span>Fim (opcional)</span><input type="date" name="ends_at"></label>
+  </div>
+  <label class="field"><span>Descrição curta</span><input type="text" name="description" maxlength="200"></label>
+  <label class="field"><span>Imagem (mínimo 400 px)</span><input type="file" name="image" accept="image/png,image/jpeg,image/webp" required></label>
+  <button class="btn btn-gold btn-sm" type="submit">Criar banner</button>
+</form>
+{% if rows %}<div class="table-wrap"><table><thead><tr><th>Imagem</th><th>Título</th><th>Destino</th><th>Ordem</th><th>Período</th><th>Estado</th><th></th></tr></thead><tbody>
+{% for b in rows %}<tr>
+  <td><img src="{{ media_url('banner', b['stored_name']) }}" alt="" width="96"></td><td>{{ b['title'] }}</td><td>{{ b['destination'] }}</td><td>{{ b['position'] }}</td>
+  <td class="small">{{ (b['starts_at'] or '')[:10] or '—' }} a {{ (b['ends_at'] or '')[:10] or '—' }}</td>
+  <td><span class="status {{ 'status-published' if b['is_active'] else 'status-rejected' }}">{{ 'Ativo' if b['is_active'] else 'Inativo' }}</span></td>
+  <td><div class="row">
+    <form method="post">{% include "admin/_csrf.html" %}<input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="{{ b['id'] }}"><button class="btn btn-sm" type="submit">{{ 'Desativar' if b['is_active'] else 'Ativar' }}</button></form>
+    <form method="post">{% include "admin/_csrf.html" %}<input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ b['id'] }}"><button class="btn btn-danger btn-sm" type="submit" data-confirm="Excluir este banner?">Excluir</button></form></div></td></tr>{% endfor %}
+</tbody></table></div>
+{% else %}<div class="empty">{{ icon('image') }}<h2>Nenhum banner</h2><p>Sem banners ativos, a página inicial mostra uma chamada padrão.</p></div>{% endif %}
+{% endblock %}

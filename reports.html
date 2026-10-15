@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Denúncias — Administração{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Denúncias</h1></div>
+{% include "admin/_nav.html" %}
+<div class="tabs">
+  <a href="{{ url_for('admin.reports', status='open') }}" class="{{ 'on' if status == 'open' }}">Abertas</a>
+  <a href="{{ url_for('admin.reports', status='resolved') }}" class="{{ 'on' if status == 'resolved' }}">Resolvidas</a>
+  <a href="{{ url_for('admin.reports', status='dismissed') }}" class="{{ 'on' if status == 'dismissed' }}">Descartadas</a>
+</div>
+{% if rows %}{% for r in rows %}
+<div class="panel">
+  <p><b><a class="link-gold" href="{{ url_for('admin.review', asset_id=r['asset_id']) }}">{{ r['asset_title'] }}</a></b> · {{ r['reason'] }} · por {{ r['reporter'] }} · {{ r['created_at']|datebr }}</p>
+  {% if r['details'] %}<p class="muted">{{ r['details'] }}</p>{% endif %}
+  {% if r['status'] == 'open' %}
+  <form method="post" action="{{ url_for('admin.report_resolve', rid=r['id']) }}">{% include "admin/_csrf.html" %}
+    <div class="spec-grid">
+      <label class="field"><span>Resultado</span><select name="outcome" required><option value="resolved">Resolvida (medida tomada)</option><option value="dismissed">Descartada (sem violação)</option></select></label>
+      <label class="field"><span>Justificativa</span><input type="text" name="resolution" maxlength="1000" required></label>
+    </div>
+    <button class="btn btn-sm" type="submit">Encerrar denúncia</button></form>
+  {% else %}<p class="small muted">Encerrada em {{ r['resolved_at']|datebr }}: {{ r['resolution'] }}</p>{% endif %}
+</div>{% endfor %}
+{% else %}<div class="empty">{{ icon('flag') }}<h2>Nenhuma denúncia {{ 'aberta' if status == 'open' else 'nesta lista' }}</h2></div>{% endif %}
+{% endblock %}

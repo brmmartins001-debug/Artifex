@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Criar conta — Artifex{% endblock %}
+{% block content %}
+<div class="auth-box panel">
+  <h1>Criar conta</h1>
+  <p class="muted">Uma conta serve para obter recursos e também para publicar os seus.</p>
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Nome público</span><input type="text" name="display_name" value="{{ form.get('display_name', '') }}" maxlength="50" autocomplete="name" required autofocus></label>
+    <label class="field"><span>E-mail</span><input type="email" name="email" value="{{ form.get('email', '') }}" autocomplete="email" required></label>
+    <label class="field"><span>Senha</span><input type="password" name="password" autocomplete="new-password" minlength="10" required><span class="hint">Mínimo de 10 caracteres.</span></label>
+    <label class="field"><span>Repita a senha</span><input type="password" name="password2" autocomplete="new-password" required></label>
+    <label class="check"><input type="checkbox" name="terms" value="1" {% if form.get('terms') %}checked{% endif %}>
+      <span>Li e aceito os <a class="link-gold" href="{{ url_for('market.policy', slug='termos') }}" target="_blank" rel="noopener">Termos de uso</a> e a <a class="link-gold" href="{{ url_for('market.policy', slug='privacidade') }}" target="_blank" rel="noopener">Política de privacidade</a>.</span></label>
+    <button class="btn btn-gold btn-block" type="submit">Criar conta</button>
+  </form>
+  <hr>
+  <p class="small muted">Já tem conta? <a class="link-gold" href="{{ url_for('auth.login', next=request.args.get('next')) }}">Entrar</a></p>
+</div>
+{% endblock %}

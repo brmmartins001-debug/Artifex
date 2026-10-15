@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% from "partials/cards.html" import carousel with context %}
+{% block title %}{{ a['title'] or 'Recurso sem título' }} — Artifex{% endblock %}
+{% block content %}
+{% if preview %}
+<div class="notice"><strong>Prévia.</strong> É assim que a página do recurso vai aparecer. Os botões abaixo ficam inativos nesta visualização.</div>
+{% endif %}
+{% if a['status'] != 'published' and not preview %}
+<div class="notice {% if a['status'] in ('rejected','suspended','removed') %}warn{% endif %}">
+  <strong>Estado: {{ STATUS_LABELS[a['status']] }}.</strong> Este recurso não está visível ao público.
+  {% if last_decision %}<br>Motivo registrado: {{ last_decision['reason'] }}{% endif %}
+  {% if is_owner and a['status'] in ('draft','changes_requested') %}<br><a class="link-gold" href="{{ url_for('publish.step1', asset_id=a['id']) }}">Editar e reenviar →</a>{% endif %}
+</div>
+{% endif %}
+
+<nav class="small muted" aria-label="Trilha"><a href="{{ url_for('market.categories') }}">Categorias</a> /
+  {% if a['category_slug'] %}<a href="{{ url_for('market.explore', category=a['category_slug']) }}">{{ a['category_name'] }}</a>{% endif %}</nav>
+
+<div class="asset-layout">
+  <div>
+    <div data-gallery>
+      <div class="gallery-main" data-gallery-main>
+        {% if cover %}<img src="{{ media_url('asset', cover['stored_name']) }}" alt="Capa de {{ a['title'] }}">
+        {% elif images %}<img src="{{ media_url('asset', images[0]['stored_name']) }}" alt="">
+        {% else %}<span class="muted">Sem imagem</span>{% endif %}
+      </div>
+      {% if cover or images or videos %}
+      <div class="thumbs">
+        {% if cover %}<button type="button" data-src="{{ media_url('asset', cover['stored_name']) }}" data-type="image" aria-current="true" aria-label="Capa"><img src="{{ media_url('asset', cover['thumb_name']) }}" alt=""></button>{% endif %}
+        {% for m in images %}<button type="button" data-src="{{ media_url('asset', m['stored_name']) }}" data-type="image" aria-label="Imagem {{ loop.index }}"><img src="{{ media_url('asset', m['thumb_name']) }}" alt=""></button>{% endfor %}
+        {% for m in videos %}<button type="button" data-src="{{ media_url('asset', m['stored_name']) }}" data-type="video" aria-label="Vídeo {{ loop.index }}"><span class="vid">▶ Vídeo {{ loop.index }}</span></button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <section class="section mt">
+      <h2>Descrição</h2>
+      <div class="prose">{% for p in a['description']|paragraphs %}<p>{{ p }}</p>{% else %}<p class="muted">Sem descrição.</p>{% endfor %}</div>
+      {% if a['included_content'] %}<h3>Conteúdo incluído</h3><div class="prose"><p>{{ a['included_content'] }}</p></div>{% endif %}
+    </section>
+
+    {% if spec_rows or a['requirements'] or a['dependencies'] %}
+    <section class="section">
+      <h2>Requisitos e características</h2>
+      {% if spec_rows %}<dl class="meta-list">{% for k, v in spec_rows %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}</dl>{% endif %}
+      {% if a['requirements'] %}<h3 class="mt">Requisitos técnicos</h3><div class="prose"><p>{{ a['requirements'] }}</p></div>{% endif %}
+      {% if a['dependencies'] %}<h3>Dependências</h3><div class="prose"><p>{{ a['dependencies'] }}</p></div>{% endif %}
+    </section>
+    {% endif %}
+
+    <section class="section">
+      <h2>Histórico de versões</h2>
+      {% if versions %}<ul class="version-list">{% for v in versions %}<li><strong>v{{ v['version'] }}</strong> <span class="muted small">{{ v['created_at']|datebr }}</span><br>{{ v['changelog'] }}</li>{% endfor %}</ul>
+      {% else %}<p class="muted">O histórico aparece depois que o recurso é enviado para análise.</p>{% endif %}
+    </section>
+
+    <section class="section">
+      <h2>Avaliações e comentários</h2>
+      <p class="muted">As avaliações de usuários ainda não estão disponíveis nesta versão do Artifex.</p>
+    </section>
+  </div>
+
+  <aside>
+    <div class="panel buy-box">
+      <h1>{{ a['title'] or 'Recurso sem título' }}</h1>
+      <p class="muted">por <a class="link-gold" href="{{ url_for('account.profile', handle=a['creator_handle']) }}">{{ a['creator_name'] }}</a></p>
+      <div class="big-price {% if a['price_cents'] == 0 %}free{% endif %}">{{ a['price_cents']|price }}</div>
+
+      {% if preview %}
+        <button class="btn btn-gold btn-block" type="button" disabled>{{ 'Obter gratuitamente' if a['price_cents'] == 0 else 'Adicionar ao carrinho' }}</button>
+      {% elif a['status'] == 'published' and not is_owner %}
+        {% if not current_user %}
+          <a class="btn btn-gold btn-block" href="{{ url_for('auth.login', next=request.path) }}">Entre para {{ 'obter' if a['price_cents'] == 0 else 'comprar' }}</a>
+        {% elif in_library %}
+          <p class="notice">{{ icon('check') }} Este recurso está na sua biblioteca.</p>
+        {% elif a['price_cents'] == 0 %}
+          <form method="post" action="{{ url_for('market.get_free', asset_id=a['id']) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-gold btn-block" type="submit">Obter gratuitamente</button></form>
+        {% else %}
+          <button class="btn btn-block" type="button" disabled>Compra indisponível</button>
+          <p class="muted small mt">O pagamento ainda não está configurado neste servidor. Nenhuma compra pode ser feita por enquanto.</p>
+        {% endif %}
+      {% endif %}
+
+      {% if can_download and files and not preview %}
+        <h3 class="mt">Arquivos</h3>
+        {% for f in files %}<div class="file-row"><span>{{ f['original_name'] }} <span class="muted small">({{ f['size_bytes']|filesize }})</span></span>
+          <a class="btn btn-sm" href="{{ url_for('market.download', file_id=f['id']) }}">{{ icon('download') }} Baixar</a></div>{% endfor %}
+      {% elif files %}
+        <p class="muted small mt">{{ files|length }} arquivo{{ '' if files|length == 1 else 's' }} · {{ (files|sum(attribute='size_bytes'))|filesize }} no total</p>
+      {% endif %}
+
+      <div class="row mt">
+        {% if current_user and not preview and a['status'] == 'published' %}
+        <form class="inline-form" method="post" action="{{ url_for('market.favorite', asset_id=a['id']) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-ghost btn-sm" type="submit" aria-pressed="{{ 'true' if is_fav else 'false' }}">{{ icon('heart') }} {{ 'Favoritado' if is_fav else 'Favoritar' }}</button></form>
+        {% endif %}
+        {% if not preview and a['status'] == 'published' %}<button class="btn btn-ghost btn-sm" type="button" data-share="{{ request.url }}">Compartilhar</button>{% endif %}
+        {% if is_admin and not preview %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.review', asset_id=a['id']) }}">{{ icon('shield') }} Moderar</a>{% endif %}
+      </div>
+
+      <hr>
+      <dl class="meta-list">
+        {% if a['category_name'] %}<dt>Categoria</dt><dd>{{ a['category_name'] }}{% if a['subcategory'] %} · {{ a['subcategory'] }}{% endif %}</dd>{% endif %}
+        {% if formats %}<dt>Formatos</dt><dd>{{ formats|join(', ') }}</dd>{% endif %}
+        {% if compat %}<dt>Compatível</dt><dd>{% for c in compat %}{{ c['engine'] }}{% if c['versions'] %} ({{ c['versions'] }}){% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</dd>{% endif %}
+        <dt>Licença</dt><dd>{{ LICENSE_LABELS.get(a['license'], 'Não informada') }}{% if a['license_notes'] %}<br><span class="muted small">{{ a['license_notes'] }}</span>{% endif %}</dd>
+        <dt>Versão</dt><dd>{{ a['current_version'] }}</dd>
+        {% if a['status'] == 'published' %}<dt>Downloads</dt><dd>{{ a['downloads'] }}</dd>{% endif %}
+      </dl>
+      {% if tags %}<div class="chips mt">{% for t in tags %}<a class="chip" href="{{ url_for('market.explore', tag=t) }}">{{ t }}</a>{% endfor %}</div>{% endif %}
+
+      {% if current_user and not preview and a['status'] == 'published' and not is_owner %}
+      <details class="report mt"><summary>{{ icon('flag') }} Denunciar este recurso</summary>
+        <form method="post" action="{{ url_for('market.report', asset_id=a['id']) }}" class="mt"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="field"><span>Motivo</span><select name="reason" required><option value="">Selecione…</option>{% for r in report_reasons %}<option>{{ r }}</option>{% endfor %}</select></label>
+          <label class="field"><span>Detalhes (opcional)</span><textarea name="details" maxlength="1000"></textarea></label>
+          <button class="btn btn-sm" type="submit">Enviar denúncia</button></form></details>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+
+{% if similar %}{{ carousel('Recursos semelhantes', similar) }}{% endif %}
+{% endblock %}

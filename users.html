@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Usuários — Administração{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Usuários</h1></div>
+{% include "admin/_nav.html" %}
+<form class="filters" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Nome, e-mail ou @usuário" aria-label="Buscar"><button class="btn btn-sm" type="submit">Buscar</button></form>
+<div class="table-wrap"><table><thead><tr><th>Usuário</th><th>E-mail</th><th>Papel</th><th>Publicados</th><th>Conta</th><th>Ações</th></tr></thead><tbody>
+{% for u in rows %}<tr>
+  <td>{{ u['display_name'] }} <span class="muted small">@{{ u['handle'] }}</span></td><td>{{ u['email'] }}</td>
+  <td>{{ 'Administrador' if u['role'] == 'admin' else 'Usuário' }}</td><td>{{ u['n_assets'] }}</td>
+  <td><span class="status {{ 'status-published' if u['is_active'] else 'status-rejected' }}">{{ 'Ativa' if u['is_active'] else 'Suspensa' }}</span></td>
+  <td>{% if u['id'] != current_user['id'] %}<div class="row">
+    <form method="post" action="{{ url_for('admin.user_toggle', uid=u['id']) }}">{% include "admin/_csrf.html" %}
+      <button class="btn btn-sm {{ 'btn-danger' if u['is_active'] }}" type="submit" data-confirm="{{ 'Suspender' if u['is_active'] else 'Reativar' }} esta conta?">{{ 'Suspender' if u['is_active'] else 'Reativar' }}</button></form>
+    <form method="post" action="{{ url_for('admin.user_role', uid=u['id']) }}">{% include "admin/_csrf.html" %}
+      <input type="hidden" name="role" value="{{ 'user' if u['role'] == 'admin' else 'admin' }}">
+      <button class="btn btn-ghost btn-sm" type="submit" data-confirm="Alterar o papel desta conta?">{{ 'Remover admin' if u['role'] == 'admin' else 'Tornar admin' }}</button></form></div>
+  {% else %}<span class="muted small">você</span>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

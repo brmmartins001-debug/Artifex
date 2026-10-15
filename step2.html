@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Publicar · Características — Artifex{% endblock %}
+{% block content %}
+{% include "publish/_steps.html" %}
+<form class="panel" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Características de “{{ cat['name'] }}”</h2>
+  <p class="muted small">Os campos abaixo mudam conforme a categoria escolhida na etapa 1.</p>
+
+  <div class="field"><span class="lbl">Formatos de arquivo (marque todos que o recurso inclui)</span>
+    <div class="chips">{% for fmt in formats_allowed %}
+      <label class="check"><input type="checkbox" name="format" value="{{ fmt }}" {% if fmt in chosen_formats %}checked{% endif %}> {{ fmt }}</label>{% endfor %}</div></div>
+
+  <div class="field"><span class="lbl">Engines compatíveis e versões testadas</span>
+    {% for i, eng in engines %}
+    <div class="engine-row">
+      <label class="check"><input type="checkbox" name="engine_{{ i }}" value="1" {% if eng in compat %}checked{% endif %}> {{ eng }}</label>
+      <input type="text" name="versions_{{ i }}" value="{{ compat.get(eng, '') }}" maxlength="100" placeholder="Versões testadas (ex.: 2022.3, 6.0)" aria-label="Versões testadas de {{ eng }}">
+    </div>{% endfor %}</div>
+
+  {% if fields %}
+  <h2 class="mt">Especificações técnicas</h2>
+  <div class="spec-grid">
+    {% for key, label, ftype, options in fields %}
+      {% set val = specs.get(key, '') %}
+      {% if ftype == 'bool' %}
+        <div class="field"><span class="lbl">{{ label }}</span><label class="check"><input type="checkbox" name="spec_{{ key }}" value="1" {% if val %}checked{% endif %}> Sim</label></div>
+      {% elif ftype == 'select' %}
+        <label class="field"><span>{{ label }}</span><select name="spec_{{ key }}"><option value="">Não informado</option>
+          {% for o in options %}<option {% if val == o %}selected{% endif %}>{{ o }}</option>{% endfor %}</select></label>
+      {% elif ftype == 'number' %}
+        <label class="field"><span>{{ label }}</span><input type="number" name="spec_{{ key }}" value="{{ val }}" min="0" max="999999999" inputmode="numeric"></label>
+      {% else %}
+        <label class="field"><span>{{ label }}</span><input type="text" name="spec_{{ key }}" value="{{ val }}" maxlength="100"></label>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h2 class="mt">Conteúdo e requisitos</h2>
+  <label class="field"><span>Conteúdo incluído (obrigatório)</span><textarea name="included_content" maxlength="3000" placeholder="Ex.: 12 modelos de casas, 8 modelos de props, 50+ texturas">{{ a['included_content'] }}</textarea></label>
+  <label class="field"><span>Requisitos de software (opcional)</span><textarea name="requirements" maxlength="2000" placeholder="Ex.: Unity 2022.3 LTS ou superior, URP">{{ a['requirements'] }}</textarea></label>
+  <label class="field"><span>Dependências (opcional)</span><textarea name="dependencies" maxlength="2000" placeholder="Ex.: TextMeshPro, Cinemachine">{{ a['dependencies'] }}</textarea></label>
+
+  <h2 class="mt">Licença e direitos</h2>
+  <label class="field"><span>Licença de uso</span><select name="license" required><option value="">Selecione a licença</option>
+    {% for key, label in licenses %}<option value="{{ key }}" {% if a['license'] == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+  <label class="field"><span>Observações da licença (obrigatório se “Personalizada”)</span><textarea name="license_notes" maxlength="2000">{{ a['license_notes'] }}</textarea></label>
+  <div class="field"><span class="lbl">Titularidade dos direitos</span>
+    {% for key, label in rights %}<label class="check"><input type="radio" name="rights_basis" value="{{ key }}" {% if specs.get('rights_basis') == key %}checked{% endif %}> {{ label }}</label>{% endfor %}</div>
+  <label class="field"><span>Detalhes de autorização/créditos (opcional)</span><textarea name="rights_detail" maxlength="500">{{ specs.get('rights_detail', '') }}</textarea></label>
+
+  <div class="form-actions">
+    <button class="btn btn-ghost" type="submit" name="action" value="back">← Voltar</button>
+    <span class="row">
+      <button class="btn" type="submit" name="action" value="save">Salvar rascunho</button>
+      <button class="btn btn-gold" type="submit" name="action" value="next">Próximo →</button>
+    </span>
+  </div>
+</form>
+{% endblock %}

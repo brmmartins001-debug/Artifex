@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Recuperar senha — Artifex{% endblock %}
+{% block content %}
+<div class="auth-box panel">
+  <h1>Recuperar senha</h1>
+  <p class="muted">Informe o e-mail da conta. Se ele estiver cadastrado, enviaremos um link para criar uma nova senha.</p>
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>E-mail</span><input type="email" name="email" autocomplete="email" required autofocus></label>
+    <button class="btn btn-gold btn-block" type="submit">Enviar link</button>
+  </form>
+  <p class="small mt"><a class="link-gold" href="{{ url_for('auth.login') }}">Voltar ao login</a></p>
+</div>
+{% endblock %}

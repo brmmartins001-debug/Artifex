@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Painel de criador — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Painel de criador</h1>
+  <form method="post" action="{{ url_for('publish.new') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-gold" type="submit">{{ icon('plus') }} Novo recurso</button></form></div>
+<div class="stats">
+  <div class="stat"><b>{{ counts.get('published', 0) }}</b><span>Publicados</span></div>
+  <div class="stat"><b>{{ counts.get('draft', 0) }}</b><span>Rascunhos</span></div>
+  <div class="stat"><b>{{ counts.get('submitted', 0) + counts.get('in_review', 0) }}</b><span>Em análise</span></div>
+  <div class="stat"><b>{{ counts.get('changes_requested', 0) }}</b><span>Alterações solicitadas</span></div>
+  <div class="stat"><b>{{ totals.views }}</b><span>Visualizações</span></div>
+  <div class="stat"><b>{{ totals.downloads }}</b><span>Downloads</span></div>
+  <div class="stat"><b>{{ totals.favorites }}</b><span>Favoritos</span></div>
+</div>
+<p class="muted small">Vendas e receitas aparecem aqui quando os pagamentos forem integrados. Até lá, nenhum valor é registrado.</p>
+{% if rows %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Recurso</th><th>Categoria</th><th>Estado</th><th>Preço</th><th>Visualizações</th><th>Downloads</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr>
+    <td><a href="{{ url_for('market.asset', asset_id=r['id']) }}">{{ r['title'] or 'Sem título' }}</a></td>
+    <td>{{ r['category_name'] or '—' }}</td>
+    <td><span class="status status-{{ r['status'] }}">{{ STATUS_LABELS[r['status']] }}</span></td>
+    <td>{{ r['price_cents']|price }}</td><td>{{ r['views'] }}</td><td>{{ r['downloads'] }}</td>
+    <td>{% if r['status'] in ('draft', 'changes_requested') %}<a class="btn btn-sm" href="{{ url_for('publish.step1', asset_id=r['id']) }}">{{ icon('edit') }} Editar</a>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody></table></div>
+{% else %}
+<div class="empty">{{ icon('upload') }}<h2>Você ainda não criou recursos</h2><p>Publique modelos, texturas, áudio e mais. Todo recurso passa por análise antes de ficar público.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "partials/cards.html" import carousel with context %}
+{% block title %}Categorias — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Categorias</h1></div>
+<div class="cat-grid">
+  {% for c in cats %}
+  <a class="cat-tile" href="{{ url_for('market.explore', category=c['slug']) }}">{{ icon(c['icon']) }}<span>{{ c['name'] }}</span><small>{{ c['n'] }} recurso{{ '' if c['n'] == 1 else 's' }}</small></a>
+  {% endfor %}
+</div>
+{% for c, rows in featured %}
+  {{ carousel('Destaques em ' ~ c['name'], rows, url_for('market.explore', category=c['slug'])) }}
+{% else %}
+  <div class="empty">{{ icon('grid') }}<h2>Sem destaques ainda</h2><p>Quando houver recursos publicados, os mais populares de cada categoria aparecem aqui.</p></div>
+{% endfor %}
+{% endblock %}

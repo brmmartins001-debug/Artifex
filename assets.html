@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Recursos — Administração{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Recursos</h1></div>
+{% include "admin/_nav.html" %}
+<form class="filters" method="get">
+  <select name="status" aria-label="Estado" onchange="this.form.submit()">
+    <option value="queue" {% if status == 'queue' %}selected{% endif %}>Fila de análise</option>
+    <option value="all" {% if status == 'all' %}selected{% endif %}>Todos (exceto rascunhos)</option>
+    {% for k, v in STATUS_LABELS.items() if k != 'draft' %}<option value="{{ k }}" {% if status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}
+  </select>
+  <input type="search" name="q" value="{{ q }}" placeholder="Buscar por nome ou criador" aria-label="Buscar">
+  <button class="btn btn-sm" type="submit">Filtrar</button>
+</form>
+{% if rows %}
+<div class="table-wrap"><table><thead><tr><th>Recurso</th><th>Criador</th><th>Categoria</th><th>Estado</th><th>Enviado</th><th></th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r['title'] or 'Sem título' }}</td><td>{{ r['creator_name'] }}</td><td>{{ r['category_name'] or '—' }}</td>
+  <td><span class="status status-{{ r['status'] }}">{{ STATUS_LABELS[r['status']] }}</span></td><td>{{ r['submitted_at']|datebr }}</td>
+  <td><a class="btn btn-sm" href="{{ url_for('admin.review', asset_id=r['id']) }}">Abrir</a></td></tr>{% endfor %}
+</tbody></table></div>
+{% else %}<div class="empty">{{ icon('box') }}<h2>Nenhum recurso nesta lista</h2></div>{% endif %}
+{% endblock %}

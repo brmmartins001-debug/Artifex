@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "partials/cards.html" import carousel with context %}
+{% block content %}
+{% if banners %}
+<section class="hero" data-hero aria-roledescription="carrossel" aria-label="Destaques">
+  {% for b in banners %}
+  <div class="hero-slide">
+    <img src="{{ media_url('banner', b['stored_name']) }}" alt="" {% if not loop.first %}loading="lazy"{% endif %}>
+    <div class="hero-copy">
+      <h2>{{ b['title'] }}</h2>
+      {% if b['description'] %}<p>{{ b['description'] }}</p>{% endif %}
+      <a class="btn btn-gold" href="{{ b['destination'] }}">Ver mais</a>
+    </div>
+  </div>
+  {% endfor %}
+  <button class="car-btn prev" type="button" aria-label="Banner anterior" hidden>‹</button>
+  <button class="car-btn next" type="button" aria-label="Próximo banner" hidden>›</button>
+  <div class="hero-dots"></div>
+</section>
+{% else %}
+<section class="hero hero-empty">
+  <h1>Construa mundos sem limites</h1>
+  <p>Modelos 3D, texturas, sprites, áudio, shaders e mais — recursos feitos por criadores para o seu próximo jogo.</p>
+  <div class="row">
+    <a class="btn btn-gold" href="{{ url_for('market.explore') }}">Explorar agora</a>
+    <a class="btn" href="{{ url_for('publish.index') }}">Publicar um recurso</a>
+  </div>
+</section>
+{% endif %}
+
+{% if total == 0 %}
+<div class="empty">
+  {{ icon('box') }}
+  <h2>O catálogo ainda está vazio</h2>
+  <p>Ainda não há recursos publicados. Seja o primeiro criador: envie um recurso e, depois da análise da equipe, ele aparece aqui.</p>
+  <a class="btn btn-gold" href="{{ url_for('publish.index') }}">Publicar recurso</a>
+</div>
+{% else %}
+{% if recommended %}{{ carousel('Recomendados para você', recommended) }}{% endif %}
+{{ carousel('Mais populares', popular, url_for('market.explore', sort='popular')) }}
+{{ carousel('Lançamentos recentes', recent, url_for('market.explore', sort='recent')) }}
+{{ carousel('Recursos gratuitos', free, url_for('market.explore', price='free')) }}
+
+{% if popular_categories %}
+<section class="section">
+  <div class="section-head"><h2>Categorias populares</h2><a class="link-gold" href="{{ url_for('market.categories') }}">Ver todas →</a></div>
+  <div class="cat-grid">
+    {% for c in popular_categories %}
+    <a class="cat-tile" href="{{ url_for('market.explore', category=c['slug']) }}">{{ icon(c['icon']) }}<span>{{ c['name'] }}</span><small>{{ c['n'] }} recurso{{ '' if c['n'] == 1 else 's' }}</small></a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if creators %}
+<section class="section">
+  <div class="section-head"><h2>Criadores em destaque</h2></div>
+  <div class="grid">
+    {% for c in creators %}
+    <a class="panel row mb0" href="{{ url_for('account.profile', handle=c['handle']) }}">
+      {{ avatar(c['display_name'], c['avatar_path']) }}
+      <span><strong>{{ c['display_name'] }}</strong><br><small class="muted">{{ c['n'] }} recurso{{ '' if c['n'] == 1 else 's' }} · {{ c['d'] or 0 }} download{{ '' if (c['d'] or 0) == 1 else 's' }}</small></span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

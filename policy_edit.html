@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Editar política — Administração{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ p['title'] }}</h1></div>
+{% include "admin/_nav.html" %}
+<form class="panel" method="post">{% include "admin/_csrf.html" %}
+  <label class="field"><span>Texto (parágrafos separados por linha em branco)</span><textarea name="body" rows="18" maxlength="50000" required>{{ p['body'] }}</textarea></label>
+  <div class="form-actions"><a class="btn btn-ghost" href="{{ url_for('admin.policies') }}">Cancelar</a><button class="btn btn-gold" type="submit">Salvar</button></div>
+</form>
+{% endblock %}

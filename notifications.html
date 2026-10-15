@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Notificações — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Notificações</h1>
+  {% if unread_count %}<form method="post" action="{{ url_for('account.notifications_read') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm" type="submit">Marcar todas como lidas</button></form>{% endif %}
+</div>
+{% for n in rows %}
+<div class="notif {% if not n['read_at'] %}unread{% endif %}">
+  <div class="grow">
+    <strong>{% if n['link'] %}<a href="{{ n['link'] }}">{{ n['title'] }}</a>{% else %}{{ n['title'] }}{% endif %}</strong>
+    {% if n['body'] %}<p class="muted small mb0">{{ n['body'] }}</p>{% endif %}
+    <span class="muted small">{{ n['created_at']|datebr }}</span>
+  </div>
+  {% if not n['read_at'] %}<form method="post" action="{{ url_for('account.notifications_read') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="id" value="{{ n['id'] }}"><button class="btn btn-ghost btn-sm" type="submit">Lida</button></form>{% endif %}
+</div>
+{% else %}
+<div class="empty">{{ icon('bell') }}<h2>Sem notificações</h2><p>Avisos sobre a análise dos seus recursos e a segurança da conta aparecem aqui. Notificações por e-mail e push dependem de integrações que ainda não estão configuradas.</p></div>
+{% endfor %}
+{% endblock %}

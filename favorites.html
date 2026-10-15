@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "partials/cards.html" import grid with context %}
+{% block title %}Favoritos — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Favoritos</h1></div>
+{% if rows %}{{ grid(rows) }}{% else %}
+<div class="empty">{{ icon('heart') }}<h2>Nenhum favorito ainda</h2><p>Toque em “Favoritar” na página de um recurso para guardá-lo aqui.</p>
+  <a class="btn btn-gold" href="{{ url_for('market.explore') }}">Explorar recursos</a></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,11 @@
+<nav class="tabs" aria-label="Administração">
+  {% set ep = request.endpoint or '' %}
+  <a href="{{ url_for('admin.dashboard') }}" class="{{ 'on' if ep == 'admin.dashboard' }}">Painel</a>
+  <a href="{{ url_for('admin.assets') }}" class="{{ 'on' if ep in ('admin.assets', 'admin.review') }}">Recursos</a>
+  <a href="{{ url_for('admin.users') }}" class="{{ 'on' if ep == 'admin.users' }}">Usuários</a>
+  <a href="{{ url_for('admin.reports') }}" class="{{ 'on' if ep == 'admin.reports' }}">Denúncias</a>
+  <a href="{{ url_for('admin.categories') }}" class="{{ 'on' if ep == 'admin.categories' }}">Categorias</a>
+  <a href="{{ url_for('admin.banners') }}" class="{{ 'on' if ep == 'admin.banners' }}">Banners</a>
+  <a href="{{ url_for('admin.policies') }}" class="{{ 'on' if ep.startswith('admin.policy') or ep == 'admin.policies' }}">Políticas</a>
+  <a href="{{ url_for('admin.audit') }}" class="{{ 'on' if ep == 'admin.audit' }}">Auditoria</a>
+</nav>

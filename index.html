@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Publicar — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Publicar um recurso</h1></div>
+<div class="panel">
+  <h2>Como funciona</h2>
+  <p class="muted">Você preenche três etapas — apresentação, características e arquivos — e envia para análise. A equipe Artifex revisa cada recurso; só depois de aprovado ele fica público. Seu progresso é salvo como rascunho.</p>
+  {% if current_user %}
+  <form method="post" action="{{ url_for('publish.new') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-gold" type="submit">{{ icon('plus') }} Começar novo recurso</button></form>
+  {% else %}
+  <a class="btn btn-gold" href="{{ url_for('auth.login', next=url_for('publish.index')) }}">Entre para publicar</a>
+  {% endif %}
+</div>
+{% if drafts %}
+<h2>Seus rascunhos</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Recurso</th><th>Estado</th><th>Atualizado</th><th></th></tr></thead>
+  <tbody>{% for d in drafts %}
+    <tr><td>{{ d['title'] or 'Sem título' }}</td><td><span class="status status-{{ d['status'] }}">{{ STATUS_LABELS[d['status']] }}</span></td><td>{{ d['updated_at']|datebr }}</td>
+    <td class="row">
+      <a class="btn btn-sm" href="{{ url_for('publish.step1', asset_id=d['id']) }}">Continuar</a>
+      {% if d['status'] == 'draft' %}<form class="inline-form" method="post" action="{{ url_for('publish.delete', asset_id=d['id']) }}" data-confirm="Excluir este rascunho e seus arquivos?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm" type="submit">Excluir</button></form>{% endif %}
+    </td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+{% endblock %}

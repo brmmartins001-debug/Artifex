@@ -1,0 +1,8 @@
+<ol class="steps" aria-label="Etapas da publicação">
+  <li data-n="1" class="{{ 'on' if step == 1 else 'done' if step > 1 }}"><a href="{{ url_for('publish.step1', asset_id=a['id']) }}">Apresentação</a></li>
+  <li data-n="2" class="{{ 'on' if step == 2 else 'done' if step > 2 }}"><a href="{{ url_for('publish.step2', asset_id=a['id']) }}">Características</a></li>
+  <li data-n="3" class="{{ 'on' if step == 3 }}"><a href="{{ url_for('publish.step3', asset_id=a['id']) }}">Arquivos e envio</a></li>
+</ol>
+{% if a['status'] == 'changes_requested' %}
+<div class="notice">A equipe solicitou alterações neste recurso. Faça os ajustes e envie novamente na etapa 3.</div>
+{% endif %}

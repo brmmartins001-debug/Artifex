@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Configurações — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Configurações</h1></div>
+<div class="panel">
+  <h2>Perfil</h2>
+  <form method="post" action="{{ url_for('account.settings_profile') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row">{{ avatar(current_user['display_name'], current_user['avatar_path'], 'lg') }}
+      <label class="field"><span>Foto de perfil</span><input type="file" name="avatar" accept="image/png,image/jpeg,image/webp"></label></div>
+    <label class="field"><span>Nome público</span><input type="text" name="display_name" value="{{ current_user['display_name'] }}" maxlength="50" required></label>
+    <label class="field"><span>Biografia</span><textarea name="bio" maxlength="500">{{ current_user['bio'] }}</textarea></label>
+    <button class="btn btn-gold" type="submit">Salvar perfil</button>
+  </form>
+</div>
+<div class="panel">
+  <h2>Senha</h2>
+  <form method="post" action="{{ url_for('account.settings_password') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Senha atual</span><input type="password" name="current" autocomplete="current-password" required></label>
+    <label class="field"><span>Nova senha</span><input type="password" name="password" autocomplete="new-password" minlength="10" required></label>
+    <label class="field"><span>Repita a nova senha</span><input type="password" name="password2" autocomplete="new-password" required></label>
+    <button class="btn" type="submit">Alterar senha</button>
+  </form>
+</div>
+<div class="panel">
+  <h2>Privacidade</h2>
+  <p class="muted">Seu histórico de pesquisas é usado apenas para sugerir buscas recentes na barra de pesquisa.</p>
+  <form method="post" action="{{ url_for('market.clear_history') }}" data-confirm="Apagar todo o histórico de pesquisas?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm" type="submit">Limpar histórico de pesquisas</button></form>
+</div>
+<div class="panel">
+  <h2>Excluir conta</h2>
+  <p class="muted">Seus dados pessoais são removidos, sua biblioteca e seus favoritos são apagados e os recursos que você publicou saem do ar. Esta ação não pode ser desfeita.</p>
+  <form method="post" action="{{ url_for('account.settings_delete') }}" data-confirm="Excluir sua conta definitivamente?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Confirme com sua senha</span><input type="password" name="current" autocomplete="current-password" required></label>
+    <button class="btn btn-danger" type="submit">Excluir minha conta</button>
+  </form>
+</div>
+{% endblock %}

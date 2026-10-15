@@ -1,0 +1,26 @@
+{% extends "market/asset.html" %}
+{% block title %}Análise: {{ a['title'] }} — Administração{% endblock %}
+{% block content %}
+<div class="panel review-actions">
+  <div class="page-head"><h1>Análise do recurso</h1><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.assets') }}">← Voltar à fila</a></div>
+  <p>Estado atual: <span class="status status-{{ a['status'] }}">{{ STATUS_LABELS[a['status']] }}</span> · Criador: {{ a['creator_name'] }} ·
+     Direitos confirmados: {{ 'sim, em ' ~ (a['rights_confirmed_at']|datebr) if a['rights_confirmed'] else 'não' }}</p>
+  {% if actions %}
+  <form method="post" action="{{ url_for('admin.decide', asset_id=a['id']) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Decisão</span><select name="action" required>{% for key, label in actions %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Motivo (obrigatório, exceto ao assumir a análise; o criador é notificado)</span><textarea name="reason" maxlength="2000"></textarea></label>
+    <button class="btn btn-gold" type="submit" data-confirm="Confirmar esta decisão?">Registrar decisão</button>
+  </form>
+  {% else %}<p class="muted">Nenhuma ação disponível para este estado.</p>{% endif %}
+
+  {% if reports %}<h3 class="mt">Denúncias deste recurso</h3>
+  <ul class="small">{% for r in reports %}<li>{{ r['created_at']|datebr }} · {{ r['reporter'] }} · {{ r['reason'] }}{% if r['details'] %} — {{ r['details'] }}{% endif %} ({{ r['status'] }})</li>{% endfor %}</ul>{% endif %}
+
+  <h3 class="mt">Histórico de moderação</h3>
+  {% if events %}<ul class="version-list">{% for e in events %}
+    <li>{{ e['created_at']|datebr }} · <b>{{ e['actor'] or 'Sistema' }}</b> · {{ e['action'] }} ({{ e['from_status'] or '—' }} → {{ e['to_status'] }}){% if e['reason'] %}<br><span class="muted small">{{ e['reason'] }}</span>{% endif %}</li>{% endfor %}</ul>
+  {% else %}<p class="muted small">Sem eventos.</p>{% endif %}
+</div>
+{{ super() }}
+{% endblock %}

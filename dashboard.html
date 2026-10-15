@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Administração — Artifex{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Administração</h1></div>
+{% include "admin/_nav.html" %}
+<div class="stats">
+  <div class="stat"><b>{{ stats.queue }}</b><span>Na fila de análise</span></div>
+  <div class="stat"><b>{{ stats.changes }}</b><span>Aguardando alterações</span></div>
+  <div class="stat"><b>{{ stats.published }}</b><span>Publicados</span></div>
+  <div class="stat"><b>{{ stats.reports }}</b><span>Denúncias abertas</span></div>
+  <div class="stat"><b>{{ stats.users }}</b><span>Usuários</span></div>
+</div>
+<div class="section-head"><h2>Próximos da fila</h2><a class="link-gold" href="{{ url_for('admin.assets') }}">Ver fila completa →</a></div>
+{% if recent %}
+<div class="table-wrap"><table><thead><tr><th>Recurso</th><th>Criador</th><th>Enviado em</th><th>Estado</th><th></th></tr></thead><tbody>
+{% for r in recent %}<tr><td>{{ r['title'] }}</td><td>{{ r['creator_name'] }}</td><td>{{ r['submitted_at']|datebr }}</td>
+  <td><span class="status status-{{ r['status'] }}">{{ STATUS_LABELS[r['status']] }}</span></td>
+  <td><a class="btn btn-sm btn-gold" href="{{ url_for('admin.review', asset_id=r['id']) }}">Analisar</a></td></tr>{% endfor %}
+</tbody></table></div>
+{% else %}<div class="empty">{{ icon('check') }}<h2>Fila vazia</h2><p>Nenhum recurso aguardando análise.</p></div>{% endif %}
+{% endblock %}
